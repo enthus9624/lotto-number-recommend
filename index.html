@@ -21,7 +21,7 @@
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             text-align: center;
-            width: 360px;
+            width: 420px;
             animation: fadeIn 0.8s ease;
         }
 
@@ -33,7 +33,7 @@
         h1 {
             font-size: 26px;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         button {
@@ -46,6 +46,7 @@
             cursor: pointer;
             transition: 0.2s ease;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-top: 10px;
         }
 
         button:hover {
@@ -53,11 +54,25 @@
             transform: translateY(-2px);
         }
 
-        #result {
-            margin-top: 30px;
+        input {
+            padding: 8px;
+            width: 80px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .set {
+            margin-top: 25px;
+        }
+
+        .row {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .ball {
@@ -79,45 +94,82 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* 로또볼 컬러 랜덤 */
         .color1 { background: #ff5252; }
         .color2 { background: #ffb300; }
         .color3 { background: #4caf50; }
         .color4 { background: #42a5f5; }
         .color5 { background: #7e57c2; }
         .color6 { background: #ec407a; }
-
+        .bonus { background: #000; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>🎉 로또 번호 추천기</h1>
-        
-        <button onclick="generateLotto()">번호 추천 받기</button>
+
+        <div>
+            <label>세트 수:</label>
+            <input type="number" id="setCount" min="1" value="1">
+        </div>
+
+        <button onclick="generateSets()">번호 추천 받기</button>
 
         <div id="result"></div>
     </div>
 
     <script>
-        function generateLotto() {
+        function generateOneSet() {
             let numbers = new Set();
 
+            // 6개 번호 생성
             while (numbers.size < 6) {
                 numbers.add(Math.floor(Math.random() * 45) + 1);
             }
 
             let lotto = [...numbers].sort((a, b) => a - b);
 
+            // 보너스 번호 생성 (중복 제거)
+            let bonus;
+            do {
+                bonus = Math.floor(Math.random() * 45) + 1;
+            } while (numbers.has(bonus));
+
+            return { lotto, bonus };
+        }
+
+        function generateSets() {
+            const count = Number(document.getElementById("setCount").value);
             const resultDiv = document.getElementById("result");
             resultDiv.innerHTML = "";
 
-            lotto.forEach((num, idx) => {
-                const ball = document.createElement("div");
-                ball.classList.add("ball", "color" + (idx + 1));
-                ball.textContent = num;
-                resultDiv.appendChild(ball);
-            });
+            for (let i = 0; i < count; i++) {
+                const setData = generateOneSet();
+
+                const setDiv = document.createElement("div");
+                setDiv.classList.add("set");
+
+                // 번호 6개 + 보너스 번호 한 줄에 표시
+                const row = document.createElement("div");
+                row.classList.add("row");
+
+                // 앞 6개 번호
+                setData.lotto.forEach((num, idx) => {
+                    const ball = document.createElement("div");
+                    ball.classList.add("ball", "color" + (idx + 1));
+                    ball.textContent = num;
+                    row.appendChild(ball);
+                });
+
+                // 마지막 보너스 공
+                const bonusBall = document.createElement("div");
+                bonusBall.classList.add("ball", "bonus");
+                bonusBall.textContent = setData.bonus;
+                row.appendChild(bonusBall);
+
+                setDiv.appendChild(row);
+                resultDiv.appendChild(setDiv);
+            }
         }
     </script>
 
